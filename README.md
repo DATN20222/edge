@@ -14,8 +14,9 @@ cat /etc/nv_tegra_release
 ```
 
 ## 1. Installation
-Tips: Use jtop to turn on fan and maximize power consumption.
 ---
+Tips: Use jtop to turn on fan and maximize power consumption.
+
 ### Docker Default Runtime
 
 To enable access to the CUDA compiler (nvcc) during `docker build` operations, add `"default-runtime": "nvidia"` to your `/etc/docker/daemon.json` configuration file before attempting to build the containers:
