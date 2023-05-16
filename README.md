@@ -53,8 +53,18 @@ It takes from 30 minutes to more than an hour to finish. Therefore, grab a cup o
 
 ## 2. Usage
 ---
+
+### Create Container
 ```shell
 sudo docker run --runtime nvidia -it --rm --network host --device /dev/video0 --device /dev/video1 -v /path/to/mount/folder:/path/to/mount/folder/inside/docker edgeAI:latest
 ```
 - Use '--device' to add the usb cameras to docker. Check for /dev/video* and add the corresponding to the command.
 - Use '-v' to mount the working folder
+
+### Run Code
+Modify `config.py` file to change the settings. Change the `source` attribute for the appropriate input, it takes a path to a video or number(0, 1, 2, ...) for the corresponding usb cameras.
+
+Current implementation will only produce a result video `output.mp4` after execution.
+```shell
+python3 main.py
+```
