@@ -1,10 +1,10 @@
-## edgeAI
+# EdgeAI
 ---
 This is the implementation of AI models and services on edge devices.
 
 Tested on Jetson Nano 4GB
 
-## 0.Prerequisite
+## 0. Prerequisite
 ---
 Check for L4T version of Jetson Nano.
 
@@ -16,5 +16,5 @@ cat /etc/nv_tegra_release
 ## 1. Installation
 ---
 
-### 2. Usage
+## 2. Usage
 ---
