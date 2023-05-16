@@ -38,6 +38,17 @@ You will then want to restart the Docker service or reboot your system before pr
 ```shell
 sudo systemctl restart docker.service
 ```
+### Build Docker
+Firstly, clone the code of this repo.
+```shell
+git clone https://github.com/DATN20222/edge.git
+cd edge
+```
 
+Build the docker.
+```shell
+sudo docker build -t edgeAI .
+```
+It takes from 30 minutes to more than an hour to finish. Therefore, grab a cup of coffee and watch TV :D.
 ## 2. Usage
 ---
