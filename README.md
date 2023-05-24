@@ -13,14 +13,34 @@ This implementation is for L4T R32.7.x version.
 cat /etc/nv_tegra_release
 ```
 
+Setting SWAP to 4GB:
+```shell
+free -m 
+sudo fallocate -l 4G /mnt/4GB.swap
+sudo chmod 600 /mnt/4GB.swap
+sudo mkswap /mnt/4GB.swap
+```
+Add `"/mnt/4GB.swap swap defaults 0 0"` to your `/ect/fstab`:
+```shell
+sudo vi /ect/fstab
+```
+Then reset jetsonnano
+
 ## 1. Installation
 ---
 Tips: Use jtop to turn on fan and maximize power consumption.
 
 ### Docker Default Runtime
+If you don't ensure that /etc/docker/daemon.json with the path to nvidia-container-runtime:
+```shell
+sudo apt install nvidia-docker2
+Update docker daemon
+sudo vim /etc/docker/daemon.json
+#Make docker update the path:
+sudo pkill -SIGHUP dockerd
+```
 
 To enable access to the CUDA compiler (nvcc) during `docker build` operations, add `"default-runtime": "nvidia"` to your `/etc/docker/daemon.json` configuration file before attempting to build the containers:
-
 ``` json
 {
     "runtimes": {
@@ -38,6 +58,13 @@ You will then want to restart the Docker service or reboot your system before pr
 ```shell
 sudo systemctl restart docker.service
 ```
+
+Before building docker you install tensorrt.
+```shell
+sudo apt install nvidia-tensorrt
+sudo apt -y install nvidia-container-csv-tensorrt
+```
+
 ### Build Docker
 Firstly, clone the code of this repo.
 ```shell
