@@ -31,10 +31,10 @@ Then reset jetsonnano
 Tips: Use jtop to turn on fan and maximize power consumption.
 
 ### Docker Default Runtime
-If you don't ensure that /etc/docker/daemon.json with the path to nvidia-container-runtime:
+
+Do not follow this section if you installed the `nvidia-docker2` package, it already registers the runtime.To register the `nvidia runtime` use the method below
 ```shell
 sudo apt install nvidia-docker2
-Update docker daemon
 sudo vim /etc/docker/daemon.json
 #Make docker update the path:
 sudo pkill -SIGHUP dockerd
