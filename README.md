@@ -57,7 +57,7 @@ You will then want to restart the Docker service or reboot your system before pr
 sudo systemctl restart docker.service
 ```
 
-Before building docker you install tensorrt.
+Install tensorrt.
 ```shell
 sudo apt install nvidia-tensorrt
 sudo apt -y install nvidia-container-csv-tensorrt
