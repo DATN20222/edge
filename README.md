@@ -32,11 +32,9 @@ Tips: Use jtop to turn on fan and maximize power consumption.
 
 ### Docker Default Runtime
 
-Do not follow this section if you installed the `nvidia-docker2` package, it already registers the runtime.To register the `nvidia runtime` use the method below
+Register the `nvidia runtime`:
 ```shell
 sudo apt install nvidia-docker2
-sudo vim /etc/docker/daemon.json
-#Make docker update the path:
 sudo pkill -SIGHUP dockerd
 ```
 
