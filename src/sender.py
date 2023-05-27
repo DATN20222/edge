@@ -32,6 +32,21 @@ def send_frame(frame):
 
 
 def send_feature(tracked_objects):
+    start_time = time.time()
+    url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
+    params = pika.URLParameters(url)
+    params.socket_timeout = 5
+    connection = pika.BlockingConnection(params)
+    channel = connection.channel()
+    channel.queue_declare(queue="q-2")
     for o in tracked_objects:
-        #send ft
-        pass
+        if o.last_detection.embedding is not None:
+            data = {
+                "ip": config.jetson_ip,
+                "id": o.id,
+                "vector": base64.binascii.b2a_base64(o.last_detection.embedding).decode("ascii"),
+                "type": 2,
+            }
+            message = json.dumps(data)
+            channel.basic_publish(exchange="", routing_key="q-2", body=message) 
+    print('send features time', time.time()-start_time, 's')
