@@ -6,6 +6,7 @@ import torch.nn as nn
 import cv2
 from utils.general import yaml_load, check_version, LOGGER
 from collections import OrderedDict, namedtuple
+from utils.torch_utils import smart_inference_mode
 import tensorrt as trt  # https://developer.nvidia.com/nvidia-tensorrt-download
 check_version(trt.__version__, '7.0.0', hard=True)  # require tensorrt>=7.0.0
 
@@ -53,6 +54,7 @@ class DetectBackend(nn.Module):
             names = yaml_load(data)['names'] if data else {i: f'class{i}' for i in range(999)}
         self.__dict__.update(locals())  # assign all variables to self
     
+    @smart_inference_mode()
     def forward(self, im):
         # YOLOv5 MultiBackend inference
         if im.dtype != torch.float16:
@@ -93,14 +95,13 @@ class BodyFeatureExtractBackend():
 
     def warmup(self):
         LOGGER.info('Warming up extracting model...')
-        im = np.random.randint(0, 256, (1, self.img_size[1], self.img_size[0], 3), "uint8")
-        im = tf.cast(im, tf.float32)
-        self.model.signatures['serving_default'](im)['output_1']
+        for i in range(10):
+            im_tmp = np.random.randint(0, 255, (self.img_size[1], self.img_size[0], 3), "uint8")
+            self.extract(im_tmp)
 
     def preprocess(self, im):
         im = cv2.resize(im, self.img_size)
         im = im[np.newaxis, ...]
-        im = np.ascontiguousarray(im)
         im = tf.cast(im, tf.float32)
         return im
     
