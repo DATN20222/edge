@@ -17,7 +17,7 @@ from sender import send_frame, send_feature
 cap = cv2.VideoCapture(config.source)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
-    os.exit(1)
+    os._exit(1)
 device = select_device(config.device)
 model = DetectBackend(config.weights, device=device, data=config.classes, fp16=config.fp16)
 stride, names = model.stride, model.names
