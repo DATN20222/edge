@@ -31,6 +31,5 @@ RUN pip install onnx==1.11.0
 #Install opencv
 RUN pip install opencv-contrib-python==4.6.0.66
 #Install other dependencies
-RUN pip install norfair
 RUN pip install pika
 RUN pip install pybase64
