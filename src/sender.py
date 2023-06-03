@@ -9,18 +9,21 @@ from config import config
 import cv2
 
 
-def send_frame(frame):
+print('Creating connection...')
+url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672?heartbeat=900")
+params = pika.URLParameters(url)
+params.socket_timeout = 5
+connection = pika.BlockingConnection(params)
+channel = connection.channel()
+channel.queue_declare(queue="q-3")
+print('Connection established')
+
+def send_frame(frame, channel=channel):
     start_time = time.time()
-    url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
-    params = pika.URLParameters(url)
-    params.socket_timeout = 5
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_declare(queue="q-3")
     send_frame = cv2.resize(frame, config.send_frame_reso)
     _, send_frame = cv2.imencode('.jpeg', send_frame)
     send_frame = send_frame.tobytes()
-    image_byte = base64.b64encode(send_frame)
+    image_byte = base64.b64encode(send_frame).decode('utf-8')
     data = {
         "ip": config.jetson_ip,
         "image": str(image_byte),
@@ -31,14 +34,8 @@ def send_frame(frame):
     print('send frame time', time.time()-start_time, 's')
 
 
-def send_feature(tracked_objects):
+def send_feature(tracked_objects, channel=channel):
     start_time = time.time()
-    url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
-    params = pika.URLParameters(url)
-    params.socket_timeout = 5
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_declare(queue="q-2")
     for o in tracked_objects:
         if o.last_detection.embedding is not None:
             data = {
