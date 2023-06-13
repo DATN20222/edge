@@ -33,3 +33,6 @@ RUN pip install opencv-contrib-python==4.6.0.66
 #Install other dependencies
 RUN pip install pika
 RUN pip install pybase64
+RUN pip install rich
+RUN pip install filterpy
+RUN pip install pyserial

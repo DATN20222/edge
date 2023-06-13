@@ -14,7 +14,32 @@ from models import DetectBackend, BodyFeatureExtractBackend
 import time
 from sender import send_frame, send_feature
 import pika
+import _thread
+import serial
+import json
 
+
+def ReadData(nameThread):
+    global humidity
+    global temperature
+    global gas
+    print("Create thread read data")
+    ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
+    
+    time.sleep(8)
+
+    while True:
+        try:   
+            time.sleep(2) 
+            s = ser.readline()
+            data = s.decode("utf-8")
+            j = json.loads(data)
+            humidity = j["humidity"]
+            temperature = j["temperature"]
+            gas = j["gas"]
+            print(j)   
+        except KeyboardInterrupt:
+            print("error")
 
 # Read video input
 # cap = cv2.VideoCapture(config.source)
@@ -24,6 +49,8 @@ print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
 
+
+_thread.start_new_thread(ReadData, ("Read Data",))
 # Create connection
 #LOGGER.info('Creating connection...')
 #url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
@@ -162,8 +189,9 @@ while cap.isOpened():
             video.write(frame_with_border)
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
+        
         if frame_time > config.frame_interval:
-            #send_frame(ori_im, channel)
+            send_frame(ori_im)
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
