@@ -59,3 +59,17 @@ def send_feature(tracked_objects, channel=channel):
             message = json.dumps(data)
             channel.basic_publish(exchange="", routing_key="q-2", body=message) 
     print('send features time', time.time()-start_time, 's')
+
+def sendDoor(tracked_objects, channel):
+    start_time= time.time()
+    for o in tracked_objects:
+        if o.last_detection.embedding is not None:
+            data = {
+                "ip": config.jetson_ip,
+                "userId": o.id,
+                "vector": base64.binascii.b2a_base64(o.last_detection.embedding).decode("ascii"),
+                "type": 3,
+            }
+            message = json.dumps(data)
+            channel.basic_publish(exchange="", routing_key="q-2", body=message) 
+    print('send features time', time.time()-start_time, 's')

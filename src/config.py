@@ -24,7 +24,7 @@ class Config:
         #Send
         self.frame_interval = 7 #seconds
         self.feature_interval = 2 #seconds
-        self.server_ip = '192.168.0.106'
+        self.server_ip = '192.168.0.102'
         self.port = 55
         self.send_frame_reso = (341, 192)
         self.jetson_ip = '172.168.67.89'

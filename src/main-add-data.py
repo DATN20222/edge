@@ -12,7 +12,7 @@ from norfair import Tracker, Video, draw_points, draw_tracked_objects, Detection
 from norfair.filter import OptimizedKalmanFilterFactory
 from models import DetectBackend, BodyFeatureExtractBackend
 import time
-from sender import send_frame, send_feature
+from sender import send_frame, send_feature, sendDoor
 import pika
 import _thread
 import serial
@@ -167,9 +167,9 @@ while cap.isOpened():
         # else:
         #     with dt[3]:
         #         tracked_objects = tracker.update()
-        send_frame(ori_im)
+        # send_frame(ori_im)
         time.sleep(1)
-        send_feature(tracked_objects)
+        sendDoor(tracked_objects)
         LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
