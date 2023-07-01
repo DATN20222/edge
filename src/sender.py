@@ -18,7 +18,7 @@ channel = connection.channel()
 channel.queue_declare(queue="q-3")
 print('Connection established')
 
-def send_frame( frame, humidity,  temperature, ppm, channel=channel):
+def send_frame( frame, humidity,  temperature, ppm, count, channel=channel):
     start_time = time.time()
     #url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
     #params = pika.URLParameters(url)
@@ -36,6 +36,7 @@ def send_frame( frame, humidity,  temperature, ppm, channel=channel):
         "humidity": humidity,
         "temperature": temperature,
         "ppm": ppm,
+        "count": count,
         "type": 1,
     }
     message = json.dumps(data)
