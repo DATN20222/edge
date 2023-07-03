@@ -58,6 +58,7 @@ def send_feature(tracked_objects, channel=channel):
                 "ip": config.jetson_ip,
                 "userId": o.id,
                 "vector": base64.binascii.b2a_base64(o.last_detection.embedding).decode("ascii"),
+                "position": base64.binascii.b2a_base64(np.array(o.last_detection.data)).decode("ascii"),
                 "type": 2,
             }
             message = json.dumps(data)
