@@ -1,7 +1,7 @@
 class Config:
     def __init__(self):
-        self.skip_period = 2
-        self.draw = True
+        self.skip_period = 1
+        self.draw = False
         #Models
         self.weights = 'weights/yolov5n_16_384.engine'
         self.body_extract_model = 'weights/model_trt'
@@ -24,9 +24,9 @@ class Config:
         #Send
         self.frame_interval = 7 #seconds
         self.feature_interval = 1 #seconds
-        self.server_ip = '192.168.88.175'
+        self.server_ip = '34.124.151.237'
         self.port = 55
         self.send_frame_reso = (341, 192)
-        self.jetson_ip = '172.168.67.89'
+        self.jetson_ip = '172.168.1.11'
 
 config = Config()
