@@ -143,10 +143,10 @@ while cap.isOpened():
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
         if frame_time > config.frame_interval:
-            #send_frame(ori_im)
+            send_frame(ori_im)
             frame_time = 0
         if ft_time > config.feature_interval:
-            #send_feature(tracked_objects)
+            send_feature(tracked_objects)
             ft_time = 0
         LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
