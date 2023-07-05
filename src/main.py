@@ -124,6 +124,7 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
+                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
                                     )
@@ -163,7 +164,7 @@ while cap.isOpened():
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
         if frame_time > config.frame_interval:
-            #send_frame(ori_im, channel)
+            send_frame(ori_im)
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
