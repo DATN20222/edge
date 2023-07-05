@@ -24,6 +24,9 @@ def ReadData(nameThread):
     global temperature
     global ppm
     print("Create thread read data")
+    humidity = 0.0
+    temperature = 0.0
+    ppm = 0.0
     ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
     
     time.sleep(8)
@@ -38,13 +41,11 @@ def ReadData(nameThread):
             temperature = j["temperature"]
             ppm = j["ppm"]
       
-        except KeyboardInterrupt:
+        except:
             print("error")
 
 # Read video input
-# cap = cv2.VideoCapture(config.source)
-print("Test")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(config.source)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
@@ -173,8 +174,6 @@ while cap.isOpened():
         
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
-        LOGGER.info(frame_time)
-        LOGGER.info(ft_time)
         if frame_time > config.frame_interval:
             send_frame(ori_im, humidity, temperature, ppm, len(tracked_objects))
             frame_time = 0

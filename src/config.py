@@ -3,10 +3,10 @@ class Config:
         self.skip_period = 1
         self.draw = False
         #Models
-        self.weights = 'weights/yolov5n_16_384.engine'
-        self.body_extract_model = 'weights/model_trt'
-        self.device = 0
-        self.source = 'video_examples/cam2.mp4'
+        self.weights = 'weights/yolov5n_16_384.engine' #weights of the detection model
+        self.body_extract_model = 'weights/model_trt' #weights of the extraction model
+        self.device = 0 #gpu0
+        self.source = 1
         self.height = 384
         self.width = 384
         self.fp16 = True
@@ -24,7 +24,7 @@ class Config:
         #Send
         self.frame_interval = 7 #seconds
         self.feature_interval = 1 #seconds
-        self.server_ip = '34.124.151.237'
+        self.server_ip = '34.142.132.0'
         self.port = 55
         self.send_frame_reso = (341, 192)
         self.jetson_ip = '172.168.1.11'
