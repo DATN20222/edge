@@ -12,12 +12,58 @@ from norfair import Tracker, Video, draw_points, draw_tracked_objects, Detection
 from norfair.filter import OptimizedKalmanFilterFactory
 from models import DetectBackend, BodyFeatureExtractBackend
 import time
-from sender import send_frame, send_feature, sendDoor
+from sender import send_frame, send_feature
 import pika
-# import _thread
+import _thread
 import serial
 import json
-import requests
+import random
+
+
+def ReadData(nameThread):
+    global humidity
+    global temperature
+    global ppm
+    print("Create thread read data")
+    # ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
+    
+    time.sleep(8)
+
+    while True:
+        try:   
+            time.sleep(2) 
+            # s = ser.readline()
+            # data = s.decode("utf-8")
+            # j = json.loads(data)
+            # humidity = j["humidity"]
+            # temperature = j["temperature"]
+            # ppm = j["ppm"]
+            humidity = random.random() * 100
+            temperature = random.random() * 50
+            ppm = random.random() * 400
+      
+        except KeyboardInterrupt:
+            print("error")
+
+# Read video input
+# cap = cv2.VideoCapture(config.source)
+print("Test")
+cap = cv2.VideoCapture(0)
+print('Camera Ready?', cap.isOpened())
+if cap.isOpened() == False:
+    os._exit(1)
+
+
+_thread.start_new_thread(ReadData, ("Read Data",))
+# Create connection
+#LOGGER.info('Creating connection...')
+#url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
+#params = pika.URLParameters(url)
+#params.socket_timeout = 5
+#connection = pika.BlockingConnection(params)
+#channel = connection.channel()
+#channel.queue_declare(queue="q-3")
+#LOGGER.info('Connection established')
 
 # Load detection model
 device = select_device(config.device)
@@ -44,62 +90,21 @@ tracker = Tracker(
         reid_hit_counter_max=config.reid_hit_counter_max,
         )
 
+if config.draw:
+    video = Video(input_path=config.source, output_path='./out.mp4')
 
-# def ReadData(nameThread):
-#     while True:
-#         try:   
-#             s = ser.readline()
-#             data = s.decode("utf-8")
-#             j = json.loads(data)
-#             print(j)   
-#         except KeyboardInterrupt:
-#             print("error")
-
-# Read video input
-# cap = cv2.VideoCapture(config.source)
-print("Test")
-cap = cv2.VideoCapture(0)
-print('Camera Ready?', cap.isOpened())
-if cap.isOpened() == False:
-    os._exit(1)
-
-
-# _thread.start_new_thread(ReadData, ("Read Data",))
-
-
-
-
-# if config.draw:
-#     video = Video(input_path=config.source, output_path='./out.mp4')
-
+global humidity
+global temperature
+global ppm
 LOGGER.info('Start running...')
-#load serial
-# ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
-# time.sleep(12)
-
 while cap.isOpened():
     try:
-        LOGGER.info('Read data')
-        ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
-        while True:
-            s = ser.readline()
-            LOGGER.info("Parse data")
-            data = s.decode("utf-8")
-            j = json.loads(data)
-            number = j["code"]
-            LOGGER.info("number")
-            # number = 1
-            user = requests.get("http://{0}:8800/accounts/bycode/{1}".format(config.server_ip, number))
-            name = user.json()['name']
-            LOGGER.info(name)
+        start_time = time.time()
+        ret, ori_im = cap.read()
+        if ret == False:
             break
-        while True:
-            start_time = time.time()
-            ret, ori_im = cap.read()
-            if ret == False:
-                break
-            # count += 1
-            # if count % config.skip_period == 0:
+        count += 1
+        if count % config.skip_period == 0:
             # Detection preprocess
             with dt[0]:
                 im = letterbox(ori_im, (config.height, config.width), stride=stride, auto=False)[0]
@@ -164,18 +169,24 @@ while cap.isOpened():
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
             else:
                 with dt[3]:
-                    tracked_objects = tracker.update()
-    
-            # time.sleep(1)
-            # send_frame(ori_im, 80, 20, 200, len(tracked_objects))
-            time.sleep(1)
-            sendDoor(tracked_objects, number)
-            LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
-            # Print time (inference-only)
-            LOGGER.info(f"{s}{'' if len(tracked_objects) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
-            if len(tracked_objects):
-                break
-
+                    tracked_objects = tracker.update(period=config.skip_period)
+        else:
+            with dt[3]:
+                tracked_objects = tracker.update()
+        
+        frame_time = frame_time + time.time() - start_time
+        ft_time = ft_time + time.time() - start_time
+        LOGGER.info(frame_time)
+        LOGGER.info(ft_time)
+        if frame_time > config.frame_interval:
+            send_frame(ori_im, humidity, temperature, ppm, len(det))
+            frame_time = 0
+        if ft_time > config.feature_interval:
+            send_feature(tracked_objects)
+            ft_time = 0
+        LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
+        # Print time (inference-only)
+        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
     except KeyboardInterrupt:
         break
 cap.release()

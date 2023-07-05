@@ -1,6 +1,6 @@
 class Config:
     def __init__(self):
-        self.skip_period = 2
+        self.skip_period = 1
         self.draw = False
         #Models
         self.weights = 'weights/yolov5n_16_384.engine'
@@ -23,10 +23,10 @@ class Config:
         self.reid_hit_counter_max = 200
         #Send
         self.frame_interval = 7 #seconds
-        self.feature_interval = 2 #seconds
+        self.feature_interval = 1 #seconds
         self.server_ip = '34.124.151.237'
         self.port = 55
         self.send_frame_reso = (341, 192)
-        self.jetson_ip = '172.168.1.13'
+        self.jetson_ip = '172.168.1.11'
 
 config = Config()

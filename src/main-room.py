@@ -175,7 +175,7 @@ while cap.isOpened():
         LOGGER.info(frame_time)
         LOGGER.info(ft_time)
         if frame_time > config.frame_interval:
-            send_frame(ori_im, humidity, temperature, ppm, len(det))
+            send_frame(ori_im, humidity, temperature, ppm, len(tracked_objects))
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
