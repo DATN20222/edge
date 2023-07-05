@@ -14,16 +14,43 @@ from models import DetectBackend, BodyFeatureExtractBackend
 import time
 from sender import send_frame, send_feature
 import pika
+import _thread
+import serial
+import json
 
+
+def ReadData(nameThread):
+    global humidity
+    global temperature
+    global ppm
+    print("Create thread read data")
+    ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
+    
+    time.sleep(8)
+
+    while True:
+        try:   
+            time.sleep(2) 
+            s = ser.readline()
+            data = s.decode("utf-8")
+            j = json.loads(data)
+            humidity = j["humidity"]
+            temperature = j["temperature"]
+            ppm = j["ppm"]
+      
+        except KeyboardInterrupt:
+            print("error")
 
 # Read video input
 # cap = cv2.VideoCapture(config.source)
 print("Test")
-cap = cv2.VideoCapture(config.source)
+cap = cv2.VideoCapture(0)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
 
+
+_thread.start_new_thread(ReadData, ("Read Data",))
 # Create connection
 #LOGGER.info('Creating connection...')
 #url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
@@ -62,6 +89,9 @@ tracker = Tracker(
 if config.draw:
     video = Video(input_path=config.source, output_path='./out.mp4')
 
+global humidity
+global temperature
+global ppm
 LOGGER.info('Start running...')
 while cap.isOpened():
     try:
@@ -124,7 +154,6 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
-                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
                                     )
@@ -140,31 +169,13 @@ while cap.isOpened():
         else:
             with dt[3]:
                 tracked_objects = tracker.update()
-        if config.draw:
-            try:
-                draw_points(ori_im, dect_ls)
-            except:
-                draw_points(ori_im, [])
-            for track in tracked_objects:
-                print('age:', track.age, 'hit_counter:', track.hit_counter, 'reid_hit_counter:', track.reid_hit_counter_is_positive, 'id:', track.id)
-            draw_tracked_objects(ori_im, tracked_objects)
-            frame_with_border = np.ones(
-                shape=(
-                    ori_im.shape[0] + 2 * 10,
-                    ori_im.shape[1] + 2 * 10,
-                    ori_im.shape[2],
-                ),
-                dtype=ori_im.dtype,
-            )
-            frame_with_border *= 254
-            frame_with_border[
-                10:-10, 10:-10
-            ] = ori_im
-            video.write(frame_with_border)
+        
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
+        LOGGER.info(frame_time)
+        LOGGER.info(ft_time)
         if frame_time > config.frame_interval:
-            send_frame(ori_im)
+            send_frame(ori_im, humidity, temperature, ppm, len(det))
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)

@@ -29,4 +29,5 @@ class Config:
         self.send_frame_reso = (341, 192)
         self.jetson_ip = '172.168.1.11'
 
+
 config = Config()
