@@ -36,3 +36,4 @@ RUN pip install pybase64
 RUN pip install rich
 RUN pip install filterpy
 RUN pip install pyserial
+
