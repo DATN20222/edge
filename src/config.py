@@ -6,7 +6,7 @@ class Config:
         self.weights = 'weights/yolov5n_16_384.engine'
         self.body_extract_model = 'weights/model_trt'
         self.device = 0
-        self.source = 'video_examples/cam2.mp4'
+        self.source = 0
         self.height = 384
         self.width = 384
         self.fp16 = True
@@ -27,7 +27,7 @@ class Config:
         self.server_ip = '34.124.151.237'
         self.port = 55
         self.send_frame_reso = (341, 192)
-        self.jetson_ip = '172.168.1.11'
+        self.jetson_ip = '172.168.1.10'
 
 
 config = Config()
