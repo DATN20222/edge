@@ -17,6 +17,7 @@ import pika
 import _thread
 import serial
 import json
+import random
 
 
 def ReadData(nameThread):
@@ -24,19 +25,22 @@ def ReadData(nameThread):
     global temperature
     global ppm
     print("Create thread read data")
-    ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
+    # ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
     
     time.sleep(8)
 
     while True:
         try:   
             time.sleep(2) 
-            s = ser.readline()
-            data = s.decode("utf-8")
-            j = json.loads(data)
-            humidity = j["humidity"]
-            temperature = j["temperature"]
-            ppm = j["ppm"]
+            # s = ser.readline()
+            # data = s.decode("utf-8")
+            # j = json.loads(data)
+            # humidity = j["humidity"]
+            # temperature = j["temperature"]
+            # ppm = j["ppm"]
+            humidity = random.random() * 100
+            temperature = random.random() * 50
+            ppm = random.random() * 400
       
         except KeyboardInterrupt:
             print("error")
@@ -175,7 +179,7 @@ while cap.isOpened():
         LOGGER.info(frame_time)
         LOGGER.info(ft_time)
         if frame_time > config.frame_interval:
-            send_frame(ori_im, humidity, temperature, ppm, len(tracked_objects))
+            send_frame(ori_im, humidity, temperature, ppm, len(det))
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
