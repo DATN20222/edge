@@ -9,6 +9,7 @@ import pika
 from utils.general import LOGGER
 
 def sendDoor(tracked_objects, number):
+    haveEmbedding = False
     # Create connection
     print('Creating connection...')
     url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
@@ -33,6 +34,8 @@ def sendDoor(tracked_objects, number):
             }
             message = json.dumps(data)
             channel.basic_publish(exchange="", routing_key="q-2", body=message) 
+            haveEmbedding = True
             print('send features time', time.time()-start_time, 's')
 
     connection.close()
+    return haveEmbedding
