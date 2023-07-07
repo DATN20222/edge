@@ -96,8 +96,6 @@ while cap.isOpened():
         while True:
             start_time = time.time()
             ret, ori_im = cap.read()
-            tracked_objects = []
-            det = []
             if ret == False:
                 break
             count += 1
@@ -188,6 +186,7 @@ while cap.isOpened():
             if len(tracked_objects):
                 tracked_objects = []
                 det = []
+                tracker.tracked_objects = []
                 break
 
     except KeyboardInterrupt:
