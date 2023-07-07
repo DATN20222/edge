@@ -22,6 +22,7 @@ def sendDoor(tracked_objects, number):
     start_time = time.time()
     for o in tracked_objects:
         if o.last_detection.embedding is not None:
+            print(np.array(o.last_detection.data))
             data = {
                 "ip": config.jetson_ip,
                 "userId": o.id,

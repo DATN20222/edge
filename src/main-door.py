@@ -96,6 +96,8 @@ while cap.isOpened():
         while True:
             start_time = time.time()
             ret, ori_im = cap.read()
+            tracked_objects = []
+            det = []
             if ret == False:
                 break
             count += 1
@@ -145,17 +147,18 @@ while cap.isOpened():
                                         )
                             else:
                                 det_pred = Detection(
-                                        points=np.vstack(
-                                            (
-                                                [xmin, ymin],
-                                                [xmax, ymin],
-                                                [xmin, ymax],
-                                                [xmax, ymax],
-                                                )
-                                            ),
-                                        label=names[int(cls)],
-                                        embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
-                                        )
+                                    points=np.vstack(
+                                        (
+                                            [xmin, ymin],
+                                            [xmax, ymin],
+                                            [xmin, ymax],
+                                            [xmax, ymax],
+                                            )
+                                        ),
+                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
+                                    label=names[int(cls)],
+                                    embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
+                                )
                             dect_ls.append(det_pred)
                             LOGGER.info("Det_pred")
                             LOGGER.info(det_pred)
@@ -183,6 +186,8 @@ while cap.isOpened():
             # Print time (inference-only)
             LOGGER.info(f"{s}{'' if len(tracked_objects) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
             if len(tracked_objects):
+                tracked_objects = []
+                det = []
                 break
 
     except KeyboardInterrupt:
