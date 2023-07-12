@@ -24,6 +24,9 @@ def sendDoor(tracked_objects, number):
     for o in tracked_objects:
         if o.last_detection.embedding is not None:
             print(np.array(o.last_detection.data))
+            posi = np.array(o.last_detection.data)
+
+            # if(posi[0] > 0.25 and posi[1])
             data = {
                 "ip": config.jetson_ip,
                 "userId": o.id,
