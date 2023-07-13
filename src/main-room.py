@@ -142,6 +142,7 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
+                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=None,
                                     )
