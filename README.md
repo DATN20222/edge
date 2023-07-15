@@ -15,12 +15,13 @@ cat /etc/nv_tegra_release
 
 Setting SWAP to 4GB:
 ```shell
-free -m 
+free -m
+sudo systemctl disable nvzramconfig
 sudo fallocate -l 4G /mnt/4GB.swap
 sudo chmod 600 /mnt/4GB.swap
 sudo mkswap /mnt/4GB.swap
 ```
-Add `"/mnt/4GB.swap swap defaults 0 0"` to your `/ect/fstab`:
+Add `"/mnt/4GB.swap swap swap defaults 0 0"` to your `/etc/fstab`:
 ```shell
 sudo vi /ect/fstab
 ```
