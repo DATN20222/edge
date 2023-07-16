@@ -6,7 +6,7 @@ class Config:
         self.weights = 'weights/yolov5n_16_384.engine' #weights of the detection model
         self.body_extract_model = 'weights/model_trt' #weights of the extraction model
         self.device = 0 #gpu0
-        self.source = 1
+        self.source = 0
         self.height = 384
         self.width = 384
         self.fp16 = True
@@ -22,9 +22,9 @@ class Config:
         self.reid_distance_threshold = 0.2
         self.reid_hit_counter_max = 200
         #Send
-        self.frame_interval = 7 #seconds
+        self.frame_interval = 2 #seconds
         self.feature_interval = 1 #seconds
-        self.server_ip = '34.142.132.0'
+        self.server_ip = '192.168.50.117'
         self.port = 55
         self.send_frame_reso = (341, 192)
         self.jetson_ip = '172.168.1.11'

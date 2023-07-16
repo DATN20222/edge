@@ -163,9 +163,9 @@ while cap.isOpened():
                         dect_ls.append(det_pred)
                     tracked_objects = tracker.update(detections=dect_ls, period=config.skip_period)
                 # Print results
-                for c in det[:, 5].unique():
-                    n = (det[:, 5] == c).sum()  # detections per class
-                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+          #      for c in det[:, 5].unique():
+           #         n = (det[:, 5] == c).sum()  # detections per class
+            #        s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
             else:
                 with dt[3]:
                     tracked_objects = tracker.update(period=config.skip_period)
@@ -181,9 +181,9 @@ while cap.isOpened():
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
             ft_time = 0
-        LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
+        # LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
-        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
+        # LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
     except KeyboardInterrupt:
         break
 cap.release()
