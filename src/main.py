@@ -17,22 +17,11 @@ import pika
 
 
 # Read video input
-# cap = cv2.VideoCapture(config.source)
-print("Test")
 cap = cv2.VideoCapture(config.source)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
 
-# Create connection
-#LOGGER.info('Creating connection...')
-#url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
-#params = pika.URLParameters(url)
-#params.socket_timeout = 5
-#connection = pika.BlockingConnection(params)
-#channel = connection.channel()
-#channel.queue_declare(queue="q-3")
-#LOGGER.info('Connection established')
 
 # Load detection model
 device = select_device(config.device)
@@ -127,7 +116,7 @@ while cap.isOpened():
                                         ),
                                     data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
-                                    embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
+                                    embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]).astype(np.float32)[0],
                                     )
                         dect_ls.append(det_pred)
                     tracked_objects = tracker.update(detections=dect_ls, period=config.skip_period)
@@ -147,7 +136,7 @@ while cap.isOpened():
             except:
                 draw_points(ori_im, [])
             for track in tracked_objects:
-                print('age:', track.age, 'hit_counter:', track.hit_counter, 'reid_hit_counter:', track.reid_hit_counter_is_positive, 'id:', track.id)
+                print('age:', track.age, 'hit_counter:', track.hit_counter, 'reid_hit_counter:', track.reid_hit_counter, 'id:', track.id)
             draw_tracked_objects(ori_im, tracked_objects)
             frame_with_border = np.ones(
                 shape=(
