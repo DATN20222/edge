@@ -89,9 +89,9 @@ while cap.isOpened():
             number = j["code"]
             LOGGER.info("number")
             # number = 1
-            user = requests.get("http://{0}:8800/accounts/bycode/{1}".format(config.server_ip, number))
-            name = user.json()['name']
-            LOGGER.info(name)
+            # user = requests.get("http://{0}:8800/accounts/bycode/{1}".format(config.server_ip, number))
+            # name = user.json()['name']
+            # LOGGER.info(name)
             break
         while True:
             start_time = time.time()
@@ -188,7 +188,8 @@ while cap.isOpened():
                 tracked_objects = []
                 det = []
                 tracker.tracked_objects = []
-                if (haveEmbedding): 
+                if (haveEmbedding):
+                    ser.write("Success".encode())
                     break
 
     except KeyboardInterrupt:

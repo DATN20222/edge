@@ -8,6 +8,24 @@ from config import config
 import pika
 from utils.general import LOGGER
 
+def iouArea(bbox1, bbox2):
+    xmin1, ymin1, xmax1, ymax1 = bbox1
+    xmin2, ymin2, xmax2, ymax2 = bbox2
+    area1 = (xmax1-xmin1)*(ymax1-ymin1)
+    area2 = (xmax2-xmin2)*(ymax2-ymin2)
+    smaller_area = min(area1, area2)
+    xmin = max(xmin1, xmin2)
+    ymin = max(ymin1, ymin2)
+    xmax = min(xmax1, xmax2)
+    ymax = min(ymax1, ymax2)
+    if xmin>xmax or ymin>ymax:
+        return 0
+    else:
+        return (xmax-xmin)*(ymax-ymin)/smaller_area
+
+def check_position(human_bbox, predefined_bbox=[0.25, 0.25, 0.75, 0.75], threshold=0.5): #can set predefined box
+    return True if iouArea(human_bbox, predefined_bbox) > threshold else False
+    
 def sendDoor(tracked_objects, number):
     haveEmbedding = False
     # Create connection
@@ -24,18 +42,20 @@ def sendDoor(tracked_objects, number):
     for o in tracked_objects:
         if o.last_detection.embedding is not None:
             print(np.array(o.last_detection.data))
-            data = {
-                "ip": config.jetson_ip,
-                "userId": o.id,
-                "code": number,
-                "position": base64.binascii.b2a_base64(np.array(o.last_detection.data)).decode("ascii"),
-                "vector": base64.binascii.b2a_base64(o.last_detection.embedding).decode("ascii"),
-                "type": 3,
-            }
-            message = json.dumps(data)
-            channel.basic_publish(exchange="", routing_key="q-2", body=message) 
-            haveEmbedding = True
-            print('send features time', time.time()-start_time, 's')
+            if check_position(np.array(o.last_detection.data)):
+                data = {
+                    "ip": config.jetson_ip,
+                    "userId": o.id,
+                    "code": number,
+                    "position": base64.binascii.b2a_base64(np.array(o.last_detection.data)).decode("ascii"),
+                    "vector": base64.binascii.b2a_base64(o.last_detection.embedding).decode("ascii"),
+                    "type": 3,
+                }
+                message = json.dumps(data)
+                channel.basic_publish(exchange="", routing_key="q-2", body=message) 
+                haveEmbedding = True
+                print('send features time', time.time()-start_time, 's')
+                break
 
     connection.close()
     return haveEmbedding
