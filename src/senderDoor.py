@@ -23,10 +23,13 @@ def iouArea(bbox1, bbox2):
     else:
         return (xmax-xmin)*(ymax-ymin)/smaller_area
 
-def check_position(human_bbox, predefined_bbox=[0.25, 0.25, 0.75, 0.75], threshold=0.5): #can set predefined box
+def check_position(human_bbox, ori_shape, predefined_bbox=[0.25, 0.25, 0.75, 0.75], threshold=0.5): #can set predefined box
+    h, w = ori_shape
+    human_bbox = [human_bbox[0]*w, human_bbox[1]*h, human_bbox[2]*w, human_bbox[3]*h]
+    predefined_bbox = [predefined_bbox[0]*w, predefined_bbox[1]*h, predefined_bbox[2]*w, predefined_bbox[3]*h]
     return True if iouArea(human_bbox, predefined_bbox) > threshold else False
     
-def sendDoor(tracked_objects, number):
+def sendDoor(tracked_objects, number, ori_shape):
     haveEmbedding = False
     # Create connection
     print('Creating connection...')
@@ -42,7 +45,7 @@ def sendDoor(tracked_objects, number):
     for o in tracked_objects:
         if o.last_detection.embedding is not None:
             print(np.array(o.last_detection.data))
-            if check_position(np.array(o.last_detection.data)):
+            if check_position(np.array(o.last_detection.data), ori_shape):
                 data = {
                     "ip": config.jetson_ip,
                     "userId": o.id,
