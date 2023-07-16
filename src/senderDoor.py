@@ -23,7 +23,7 @@ def iouArea(bbox1, bbox2):
     else:
         return (xmax-xmin)*(ymax-ymin)/smaller_area
 
-def check_position(human_bbox, ori_shape, predefined_bbox=[0.25, 0.25, 0.75, 0.75], threshold=0.5): #can set predefined box
+def check_position(human_bbox, ori_shape, predefined_bbox=[0.35, 0, 0.65, 0.9], threshold=0.5): #can set predefined box
     h, w = ori_shape
     human_bbox = [human_bbox[0]*w, human_bbox[1]*h, human_bbox[2]*w, human_bbox[3]*h]
     predefined_bbox = [predefined_bbox[0]*w, predefined_bbox[1]*h, predefined_bbox[2]*w, predefined_bbox[3]*h]
