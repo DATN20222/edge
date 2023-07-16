@@ -140,6 +140,7 @@ while cap.isOpened():
                                                 [xmax, ymax],
                                                 )
                                             ),
+                                        data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                         label=names[int(cls)],
                                         embedding=None,
                                         )
@@ -183,7 +184,7 @@ while cap.isOpened():
             # Print time (inference-only)
             LOGGER.info(f"{s}{'' if len(tracked_objects) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
             if len(tracked_objects):
-                haveEmbedding = sendDoor(tracked_objects, number)
+                haveEmbedding = sendDoor(tracked_objects, number, ori_im.shape)
                    
                 tracked_objects = []
                 det = []
