@@ -3,9 +3,9 @@ class Config:
         self.skip_period = 1
         self.draw = False
         #Models
-        self.weights = 'weights/yolov5n_16_384.engine'
-        self.body_extract_model = 'weights/model_trt'
-        self.device = 0
+        self.weights = 'weights/yolov5n_16_384.engine' #weights of the detection model
+        self.body_extract_model = 'weights/model_trt' #weights of the extraction model
+        self.device = 0 #gpu0
         self.source = 0
         self.height = 384
         self.width = 384

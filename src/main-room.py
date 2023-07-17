@@ -24,6 +24,9 @@ def ReadData(nameThread):
     global temperature
     global ppm
     print("Create thread read data")
+    humidity = 0.0
+    temperature = 0.0
+    ppm = 0.0
     ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
     
     time.sleep(8)
@@ -38,13 +41,11 @@ def ReadData(nameThread):
             temperature = j["temperature"]
             ppm = j["ppm"]
       
-        except KeyboardInterrupt:
+        except:
             print("error")
 
 # Read video input
-# cap = cv2.VideoCapture(config.source)
-print("Test")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(config.source)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
@@ -141,6 +142,7 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
+                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=None,
                                     )
@@ -154,15 +156,16 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
+                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
                                     )
                         dect_ls.append(det_pred)
                     tracked_objects = tracker.update(detections=dect_ls, period=config.skip_period)
                 # Print results
-                for c in det[:, 5].unique():
-                    n = (det[:, 5] == c).sum()  # detections per class
-                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+          #      for c in det[:, 5].unique():
+           #         n = (det[:, 5] == c).sum()  # detections per class
+            #        s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
             else:
                 with dt[3]:
                     tracked_objects = tracker.update(period=config.skip_period)
@@ -172,17 +175,15 @@ while cap.isOpened():
         
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
-        LOGGER.info(frame_time)
-        LOGGER.info(ft_time)
         if frame_time > config.frame_interval:
             send_frame(ori_im, humidity, temperature, ppm, len(tracked_objects))
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
             ft_time = 0
-        LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
+        # LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
-        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
+        # LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
     except KeyboardInterrupt:
         break
 cap.release()
