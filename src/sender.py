@@ -8,6 +8,8 @@ from config import config
 import cv2
 import pika
 
+from utils.general import LOGGER
+
 # Create connection
 print('Creating connection...')
 url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672?heartbeat=900")

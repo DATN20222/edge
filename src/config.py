@@ -27,7 +27,6 @@ class Config:
         self.server_ip = '192.168.50.117'
         self.port = 55
         self.send_frame_reso = (341, 192)
-        self.jetson_ip = '172.168.1.11'
-
+        self.jetson_ip = '172.168.1.10'
 
 config = Config()
