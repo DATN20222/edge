@@ -17,6 +17,7 @@ import pika
 import _thread
 import serial
 import json
+import random
 
 
 def ReadData(nameThread):
@@ -24,34 +25,45 @@ def ReadData(nameThread):
     global temperature
     global ppm
     print("Create thread read data")
-    humidity = 0.0
-    temperature = 0.0
-    ppm = 0.0
-    ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
+    # ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
     
     time.sleep(8)
 
     while True:
         try:   
             time.sleep(2) 
-            s = ser.readline()
-            data = s.decode("utf-8")
-            j = json.loads(data)
-            humidity = j["humidity"]
-            temperature = j["temperature"]
-            ppm = j["ppm"]
+            # s = ser.readline()
+            # data = s.decode("utf-8")
+            # j = json.loads(data)
+            # humidity = j["humidity"]
+            # temperature = j["temperature"]
+            # ppm = j["ppm"]
+            humidity = random.random() * 100
+            temperature = random.random() * 50
+            ppm = random.random() * 400
       
-        except:
+        except KeyboardInterrupt:
             print("error")
 
 # Read video input
-cap = cv2.VideoCapture(config.source)
+# cap = cv2.VideoCapture(config.source)
+print("Test")
+cap = cv2.VideoCapture(0)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
 
 
 _thread.start_new_thread(ReadData, ("Read Data",))
+# Create connection
+#LOGGER.info('Creating connection...')
+#url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
+#params = pika.URLParameters(url)
+#params.socket_timeout = 5
+#connection = pika.BlockingConnection(params)
+#channel = connection.channel()
+#channel.queue_declare(queue="q-3")
+#LOGGER.info('Connection established')
 
 # Load detection model
 device = select_device(config.device)
@@ -123,7 +135,7 @@ while cap.isOpened():
                     for *xyxy, conf, cls in det:
                         xmin, ymin, xmax, ymax = xyxy
                         xmin, ymin, xmax, ymax = round(xmin.item()), round(ymin.item()), round(xmax.item()), round(ymax.item())
-                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.9:
+                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.8:
                             det_pred = Detection(
                                     points=np.vstack(
                                         (
@@ -133,7 +145,6 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
-                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=None,
                                     )
@@ -147,16 +158,15 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
-                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
                                     )
                         dect_ls.append(det_pred)
                     tracked_objects = tracker.update(detections=dect_ls, period=config.skip_period)
                 # Print results
-          #      for c in det[:, 5].unique():
-           #         n = (det[:, 5] == c).sum()  # detections per class
-            #        s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+                for c in det[:, 5].unique():
+                    n = (det[:, 5] == c).sum()  # detections per class
+                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
             else:
                 with dt[3]:
                     tracked_objects = tracker.update(period=config.skip_period)
@@ -166,15 +176,17 @@ while cap.isOpened():
         
         frame_time = frame_time + time.time() - start_time
         ft_time = ft_time + time.time() - start_time
+        LOGGER.info(frame_time)
+        LOGGER.info(ft_time)
         if frame_time > config.frame_interval:
-            send_frame(ori_im, humidity, temperature, ppm, len(tracked_objects))
+            send_frame(ori_im, humidity, temperature, ppm, len(det))
             frame_time = 0
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
             ft_time = 0
-        # LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
+        LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
-        # LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
+        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
     except KeyboardInterrupt:
         break
 cap.release()

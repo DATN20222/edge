@@ -22,11 +22,10 @@ class Config:
         self.reid_distance_threshold = 0.13
         self.reid_hit_counter_max = 150
         #Send
-        self.frame_interval = 7 #seconds
-        self.feature_interval = 1 #seconds
-        self.server_ip = '34.142.132.0'
+        self.frame_interval = 2 #seconds
+        self.feature_interval = 0.5 #seconds
+        self.server_ip = '192.168.50.117'
         self.send_frame_reso = (341, 192)
-        self.jetson_ip = '172.168.1.11'
-
+        self.jetson_ip = '172.168.1.10'
 
 config = Config()
