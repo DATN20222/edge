@@ -52,15 +52,6 @@ if cap.isOpened() == False:
 
 
 _thread.start_new_thread(ReadData, ("Read Data",))
-# Create connection
-#LOGGER.info('Creating connection...')
-#url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
-#params = pika.URLParameters(url)
-#params.socket_timeout = 5
-#connection = pika.BlockingConnection(params)
-#channel = connection.channel()
-#channel.queue_declare(queue="q-3")
-#LOGGER.info('Connection established')
 
 # Load detection model
 device = select_device(config.device)
@@ -132,7 +123,7 @@ while cap.isOpened():
                     for *xyxy, conf, cls in det:
                         xmin, ymin, xmax, ymax = xyxy
                         xmin, ymin, xmax, ymax = round(xmin.item()), round(ymin.item()), round(xmax.item()), round(ymax.item())
-                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.8:
+                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.9:
                             det_pred = Detection(
                                     points=np.vstack(
                                         (

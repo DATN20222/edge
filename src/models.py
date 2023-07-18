@@ -1,5 +1,3 @@
-import tensorflow as tf
-from tensorflow.python.saved_model import tag_constants
 import numpy as np
 import torch
 import torch.nn as nn
@@ -9,6 +7,8 @@ from collections import OrderedDict, namedtuple
 from utils.torch_utils import smart_inference_mode
 import tensorrt as trt  # https://developer.nvidia.com/nvidia-tensorrt-download
 check_version(trt.__version__, '7.0.0', hard=True)  # require tensorrt>=7.0.0
+import pycuda.driver as cuda
+import pycuda.autoinit
 
 
 class DetectBackend(nn.Module):
@@ -88,22 +88,42 @@ class DetectBackend(nn.Module):
 
 
 class BodyFeatureExtractBackend():
-    def __init__(self, weights='saved_model'):
+    def __init__(self, weights='reid_fp32.trt'):
         LOGGER.info('Loading extracting model...')
-        self.model = tf.saved_model.load(weights, tags=[tag_constants.SERVING])
-        self.img_size = (64, 128)
+        self.img_size = (192, 64)
+        f = open(weights, "rb")
+        self.runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING)) 
+        self.engine = self.runtime.deserialize_cuda_engine(f.read())
+        self.context = self.engine.create_execution_context()
+        self.output = np.empty([1, 224], dtype = np.float32)
+        temp_batch = self.preprocess(np.random.randint(0, 255, (np.random.randint(20, 400), np.random.randint(20, 400), 3), "uint8"))
+        self.d_input = cuda.mem_alloc(1 * temp_batch.nbytes)
+        self.d_output = cuda.mem_alloc(1 * self.output.nbytes)
+
+        self.bindings = [int(self.d_input), int(self.d_output)]
+        self.stream = cuda.Stream()
 
     def warmup(self):
         LOGGER.info('Warming up extracting model...')
-        for i in range(20):
+        for i in range(10):
             im_tmp = np.random.randint(0, 255, (np.random.randint(20, 400), np.random.randint(20, 400), 3), "uint8")
-            self.extract(im_tmp)
+            
 
-    def preprocess(self, im):
-        im = cv2.resize(im, self.img_size)
-        im = im[np.newaxis, ...]
-        im = tf.cast(im, tf.float32)
-        return im
+    def preprocess(self, img):
+        desired_h, desired_w = self.img_size
+        img = cv2.resize(img, (desired_w, round(img.shape[0]*desired_w/img.shape[1])))
+        if img.shape[0] >= desired_h:
+                img = cv2.resize(img, (desired_w, desired_h))
+        else:
+                img = cv2.copyMakeBorder(img, 0, desired_h-img.shape[0], 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+        img = img[np.newaxis, ...]
+        return img.astype(np.float32)
     
     def extract(self, im):
-        return self.model.signatures['serving_default'](self.preprocess(im))['output_1'][0]
+        im = self.preprocess(im)
+        cuda.memcpy_htod_async(self.d_input, im, self.stream)
+        self.context.execute_async_v2(self.bindings, self.stream.handle, None)
+        cuda.memcpy_dtoh_async(self.output, self.d_output, self.stream)
+        self.stream.synchronize()
+        pred = self.output
+        return pred.astype(np.float32)[0]

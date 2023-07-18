@@ -17,22 +17,11 @@ import pika
 
 
 # Read video input
-# cap = cv2.VideoCapture(config.source)
-print("Test")
 cap = cv2.VideoCapture(config.source)
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
 
-# Create connection
-#LOGGER.info('Creating connection...')
-#url = os.environ.get("CLOUDAMQP_URL", f"amqp://admin:admin@{config.server_ip}:5672")
-#params = pika.URLParameters(url)
-#params.socket_timeout = 5
-#connection = pika.BlockingConnection(params)
-#channel = connection.channel()
-#channel.queue_declare(queue="q-3")
-#LOGGER.info('Connection established')
 
 # Load detection model
 device = select_device(config.device)
@@ -101,7 +90,7 @@ while cap.isOpened():
                     for *xyxy, conf, cls in det:
                         xmin, ymin, xmax, ymax = xyxy
                         xmin, ymin, xmax, ymax = round(xmin.item()), round(ymin.item()), round(xmax.item()), round(ymax.item())
-                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.8:
+                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.9:
                             det_pred = Detection(
                                     points=np.vstack(
                                         (
@@ -111,6 +100,7 @@ while cap.isOpened():
                                             [xmax, ymax],
                                             )
                                         ),
+                                    data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
                                     embedding=None,
                                     )
@@ -146,7 +136,7 @@ while cap.isOpened():
             except:
                 draw_points(ori_im, [])
             for track in tracked_objects:
-                print('age:', track.age, 'hit_counter:', track.hit_counter, 'reid_hit_counter:', track.reid_hit_counter_is_positive, 'id:', track.id)
+                print('age:', track.age, 'hit_counter:', track.hit_counter, 'reid_hit_counter:', track.reid_hit_counter, 'id:', track.id)
             draw_tracked_objects(ori_im, tracked_objects)
             frame_with_border = np.ones(
                 shape=(
@@ -161,14 +151,6 @@ while cap.isOpened():
                 10:-10, 10:-10
             ] = ori_im
             video.write(frame_with_border)
-        frame_time = frame_time + time.time() - start_time
-        ft_time = ft_time + time.time() - start_time
-        if frame_time > config.frame_interval:
-            send_frame(ori_im)
-            frame_time = 0
-        if ft_time > config.feature_interval:
-            send_feature(tracked_objects)
-            ft_time = 0
         LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
