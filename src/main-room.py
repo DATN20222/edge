@@ -78,8 +78,6 @@ tracker = Tracker(
         reid_hit_counter_max=config.reid_hit_counter_max,
         )
 
-if config.draw:
-    video = Video(input_path=config.source, output_path='./out.mp4')
 
 global humidity
 global temperature

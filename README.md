@@ -82,7 +82,7 @@ It takes from 30 minutes to more than an hour to finish. Therefore, grab a cup o
 
 ### Create Container
 ```shell
-sudo docker run --runtime nvidia -it --rm --network host --device /dev/video0 --device /dev/video1 -v /path/to/mount/folder:/path/to/mount/folder/inside/docker edgeai:latest
+sudo docker run --runtime nvidia -it --rm --network host --device /dev/video0 --device /dev/video1 --device /dev/ttyACM0 -v /path/to/mount/folder:/path/to/mount/folder/inside/docker edgeai:latest
 ```
 - Use '--device' to add the usb cameras to docker. Check for /dev/video* and add the corresponding to the command.
 - Use '-v' to mount the working folder
