@@ -19,7 +19,7 @@ class Config:
         self.hit_counter_max = 50
         self.distance_threshold = 0.6
         self.past_detections_length = 10
-        self.reid_distance_threshold = 0.25
+        self.reid_distance_threshold = 0.2
         self.reid_hit_counter_max = 100
         #Send
         self.frame_interval = 2 #seconds
