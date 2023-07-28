@@ -33,8 +33,8 @@ count, dt = -1, (Profile(), Profile(), Profile(), Profile())
 frame_time, ft_time = 0, 0
 LOGGER.info('Creating Tracker...')
 tracker = Tracker(
-        initialization_delay=10,
-        distance_function="euclidean",
+        initialization_delay=config.initialization_delay,
+        distance_function="iou",
         hit_counter_max=config.hit_counter_max,
         filter_factory=OptimizedKalmanFilterFactory(),
         distance_threshold=config.distance_threshold,
@@ -135,8 +135,6 @@ while cap.isOpened():
                                         points=np.vstack(
                                             (
                                                 [xmin, ymin],
-                                                [xmax, ymin],
-                                                [xmin, ymax],
                                                 [xmax, ymax],
                                                 )
                                             ),
@@ -149,8 +147,6 @@ while cap.isOpened():
                                     points=np.vstack(
                                         (
                                             [xmin, ymin],
-                                            [xmax, ymin],
-                                            [xmin, ymax],
                                             [xmax, ymax],
                                             )
                                         ),

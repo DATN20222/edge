@@ -12,7 +12,7 @@ from norfair import Tracker, Video, draw_points, draw_tracked_objects, Detection
 from norfair.filter import OptimizedKalmanFilterFactory
 from models import DetectBackend, BodyFeatureExtractBackend
 import time
-from sender import send_frame, send_feature
+#from sender import send_frame, send_feature
 import pika
 
 
@@ -38,7 +38,7 @@ frame_time, ft_time = 0, 0
 LOGGER.info('Creating Tracker...')
 tracker = Tracker(
         initialization_delay=config.initialization_delay,
-        distance_function="euclidean",
+        distance_function="iou",
         hit_counter_max=config.hit_counter_max,
         filter_factory=OptimizedKalmanFilterFactory(),
         distance_threshold=config.distance_threshold,
@@ -95,8 +95,6 @@ while cap.isOpened():
                                     points=np.vstack(
                                         (
                                             [xmin, ymin],
-                                            [xmax, ymin],
-                                            [xmin, ymax],
                                             [xmax, ymax],
                                             )
                                         ),
@@ -109,8 +107,6 @@ while cap.isOpened():
                                     points=np.vstack(
                                         (
                                             [xmin, ymin],
-                                            [xmax, ymin],
-                                            [xmin, ymax],
                                             [xmax, ymax],
                                             )
                                         ),

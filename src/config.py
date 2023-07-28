@@ -17,13 +17,13 @@ class Config:
         #Track
         self.initialization_delay = 10
         self.hit_counter_max = 50
-        self.distance_threshold = 40
+        self.distance_threshold = 0.6
         self.past_detections_length = 10
-        self.reid_distance_threshold = 0.13
-        self.reid_hit_counter_max = 150
+        self.reid_distance_threshold = 0.25
+        self.reid_hit_counter_max = 100
         #Send
         self.frame_interval = 2 #seconds
-        self.feature_interval = 0.5 #seconds
+        self.feature_interval = 1 #seconds
         self.server_ip = '192.168.50.117'
         self.send_frame_reso = (341, 192)
         self.jetson_ip = '172.168.1.10'
