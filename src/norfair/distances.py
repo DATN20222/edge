@@ -264,6 +264,27 @@ def frobenius(detection: "Detection", tracked_object: "TrackedObject") -> float:
     return np.linalg.norm(detection.points - tracked_object.estimate)
 
 
+def cosine_similarity(emb1, emb2):
+    return (1 - np.dot(emb1, emb2)/(np.linalg.norm(emb1)*np.linalg.norm(emb2))) / 2
+
+
+def feature_distance(detection_fst, unmatched_trackers):
+    if detection_fst.embedding is None:
+        return 10
+    snd_embedding = unmatched_trackers.last_detection.embedding
+
+    if snd_embedding is None:
+        return 10
+    return cosine_similarity(snd_embedding, detection_fst.embedding)
+
+
+def custom(detection: "Detection", tracked_object: "TrackedObject") -> float:
+    iou_score = iou(detection.points.reshape(1, 4), tracked_object.estimate.reshape(1, 4))[0][0]
+    feature_score = feature_distance(detection, tracked_object)
+    if iou_score > 0.98:
+        return 1
+    return 0.3*iou_score + 0.7*feature_score
+
 def mean_euclidean(detection: "Detection", tracked_object: "TrackedObject") -> float:
     """
     Average euclidean distance between the points in detection and estimates in tracked_object.
@@ -388,6 +409,7 @@ _SCALAR_DISTANCE_FUNCTIONS = {
     "frobenius": frobenius,
     "mean_manhattan": mean_manhattan,
     "mean_euclidean": mean_euclidean,
+    "custom": custom,
 }
 _VECTORIZED_DISTANCE_FUNCTIONS = {
     "iou": iou,

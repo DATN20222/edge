@@ -111,6 +111,7 @@ class Tracker:
                 f" {type(distance_function)} instead."
             )
         self.distance_function = distance_function
+        self.distance_function2 = get_distance_by_name("iou")
 
         self.hit_counter_max = hit_counter_max
         self.reid_hit_counter_max = reid_hit_counter_max
@@ -217,14 +218,26 @@ class Tracker:
             period,
         )
 
+        (
+            unmatched_detections,
+            _,
+            unmatched_init_trackers,
+        ) = self._update_objects_in_place(
+            self.distance_function2,
+            0.7,
+            unmatched_init_trackers,
+            unmatched_detections,
+            period,
+        )
+
         # Update not yet initialized tracked objects with yet unmatched detections
         (
             unmatched_detections,
             matched_not_init_trackers,
             _,
         ) = self._update_objects_in_place(
-            self.distance_function,
-            self.distance_threshold,
+            self.distance_function2,
+            0.7,
             [o for o in alive_objects if o.is_initializing],
             unmatched_detections,
             period,

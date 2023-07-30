@@ -34,7 +34,7 @@ frame_time, ft_time = 0, 0
 LOGGER.info('Creating Tracker...')
 tracker = Tracker(
         initialization_delay=config.initialization_delay,
-        distance_function="iou",
+        distance_function="custom",
         hit_counter_max=config.hit_counter_max,
         filter_factory=OptimizedKalmanFilterFactory(),
         distance_threshold=config.distance_threshold,

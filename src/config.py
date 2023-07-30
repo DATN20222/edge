@@ -11,8 +11,8 @@ class Config:
         self.width = 384
         self.fp16 = True
         self.classes = 'classes.yaml'
-        self.conf_thres = 0.3
-        self.iou_thres = 0.35
+        self.conf_thres = 0.45
+        self.iou_thres = 0.45
         self.max_det = 200
         #Track
         self.initialization_delay = 10
@@ -24,8 +24,8 @@ class Config:
         #Send
         self.frame_interval = 2 #seconds
         self.feature_interval = 1 #seconds
-        self.server_ip = '192.168.50.117'
+        self.server_ip = '192.168.50.131'
         self.send_frame_reso = (341, 192)
-        self.jetson_ip = '172.168.1.10'
+        self.jetson_ip = '172.168.1.12'
 
 config = Config()
