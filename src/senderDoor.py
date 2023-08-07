@@ -50,8 +50,8 @@ def sendDoor(tracked_objects, number, ori_shape):
                     "ip": config.jetson_ip,
                     "userId": o.id,
                     "code": number,
-                    "position": base64.binascii.b2a_base64(np.array(o.last_detection.data)).decode("ascii"),
-                    "vector": base64.binascii.b2a_base64(o.last_detection.embedding).decode("ascii"),
+                    "position": base64.binascii.b2a_base64(np.float64(np.array(o.last_detection.data))).decode("ascii"),
+                    "vector": base64.binascii.b2a_base64(np.float64(o.last_detection.embedding)).decode("ascii"),
                     "type": 3,
                 }
                 message = json.dumps(data)

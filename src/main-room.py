@@ -201,6 +201,7 @@ while cap.isOpened():
         # LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
     except KeyboardInterrupt:
         break
-cap.release()
+cap.stop()
+cap.stream.release()
 del cap
 
