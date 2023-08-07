@@ -17,7 +17,37 @@ import pika
 import _thread
 import serial
 import json
+from threading import Thread
 
+class VideoStream:
+	def __init__(self, src=0):
+		# initialize the video camera stream and read the first frame
+		# from the stream
+		self.stream = cv2.VideoCapture(src)
+		(self.grabbed, self.frame) = self.stream.read()
+		# initialize the variable used to indicate if the thread should
+		# be stopped
+		self.stopped = False
+	def start(self):
+		# start the thread to read frames from the video stream
+		Thread(target=self.update, args=()).start()
+		return self
+	def update(self):
+		# keep looping infinitely until the thread is stopped
+		while True:
+			# if the thread indicator variable is set, stop the thread
+			if self.stopped:
+				return
+			# otherwise, read the next frame from the stream
+			(self.grabbed, self.frame) = self.stream.read()
+	def read(self):
+		# return the frame most recently read
+		return self.grabbed, self.frame
+	def stop(self):
+		# indicate that the thread should be stopped
+		self.stopped = True
+    def isOpened(self):
+        return self.stream.isOpened()
 
 def ReadData(nameThread):
     global humidity
@@ -45,7 +75,7 @@ def ReadData(nameThread):
             print("error")
 
 # Read video input
-cap = cv2.VideoCapture(config.source)
+cap = VideoStream(src=config.source).start()
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
@@ -166,7 +196,7 @@ while cap.isOpened():
         if ft_time > config.feature_interval:
             send_feature(tracked_objects)
             ft_time = 0
-        LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
+        LOGGER.info(f"FPS: {1/(time.time()-start_time)} fps")
         # Print time (inference-only)
         # LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")
     except KeyboardInterrupt:

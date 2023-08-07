@@ -14,10 +14,40 @@ from models import DetectBackend, BodyFeatureExtractBackend
 import time
 from senderDoor import sendDoor
 import pika
-# import _thread
 import serial
 import json
 import requests
+from threading import Thread
+
+class VideoStream:
+	def __init__(self, src=0):
+		# initialize the video camera stream and read the first frame
+		# from the stream
+		self.stream = cv2.VideoCapture(src)
+		(self.grabbed, self.frame) = self.stream.read()
+		# initialize the variable used to indicate if the thread should
+		# be stopped
+		self.stopped = False
+	def start(self):
+		# start the thread to read frames from the video stream
+		Thread(target=self.update, args=()).start()
+		return self
+	def update(self):
+		# keep looping infinitely until the thread is stopped
+		while True:
+			# if the thread indicator variable is set, stop the thread
+			if self.stopped:
+				return
+			# otherwise, read the next frame from the stream
+			(self.grabbed, self.frame) = self.stream.read()
+	def read(self):
+		# return the frame most recently read
+		return self.grabbed, self.frame
+	def stop(self):
+		# indicate that the thread should be stopped
+		self.stopped = True
+    def isOpened(self):
+        return self.stream.isOpened()
 
 # Load detection model
 device = select_device(config.device)
@@ -45,37 +75,14 @@ tracker = Tracker(
         )
 
 
-# def ReadData(nameThread):
-#     while True:
-#         try:   
-#             s = ser.readline()
-#             data = s.decode("utf-8")
-#             j = json.loads(data)
-#             print(j)   
-#         except KeyboardInterrupt:
-#             print("error")
-
 # Read video input
-cap = cv2.VideoCapture(config.source)
-print("Test")
-# cap = cv2.VideoCapture(0)
+cap = VideoStream(src=config.source).start()
 print('Camera Ready?', cap.isOpened())
 if cap.isOpened() == False:
     os._exit(1)
 
 
-# _thread.start_new_thread(ReadData, ("Read Data",))
-
-
-
-
-# if config.draw:
-#     video = Video(input_path=config.source, output_path='./out.mp4')
-
 LOGGER.info('Start running...')
-#load serial
-# ser = serial.Serial(port= '/dev/ttyACM0', baudrate=115200)
-# time.sleep(12)
 
 while cap.isOpened():
     try:
@@ -88,10 +95,6 @@ while cap.isOpened():
             j = json.loads(data)
             number = j["code"]
             LOGGER.info("number")
-            # number = 1
-            # user = requests.get("http://{0}:8800/accounts/bycode/{1}".format(config.server_ip, number))
-            # name = user.json()['name']
-            # LOGGER.info(name)
             break
         while True:
             start_time = time.time()
