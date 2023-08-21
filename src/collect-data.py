@@ -12,8 +12,8 @@ import pika, sys, os
 from datetime import datetime
 import requests
 
-ip="192.168.55.1"
-rabbitmq="192.168.0.106"
+ip="172.168.1.10"
+rabbitmq="34.124.151.237"
 
 def ReadData():
 
@@ -25,15 +25,15 @@ def ReadData():
         while True:
             s = ser.readline()
             data = s.decode("utf-8")
-            # j = json.loads(data)
+            j = json.loads(data)
             # humidity = j["humidity"]
             # temperature = j["temperature"]
             # gas = j["gas"]
-            # number = j["code"]
+            number = j["code"]
             # print(number)
-            number = 1
+            # number = 1
             # user = get_data('http://{0}:8800/accounts/bycode/{1}'.format(config.server_ip, number))
-            user = requests.get("http://{0}:8800/accounts/bycode/{1}".format("192.168.0.106", number))
+            user = requests.get("http://{0}:8800/accounts/bycode/{1}".format(rabbitmq, number))
             print(user.json())
             name = user.json()['name']
             ser.write(name.encode())

@@ -12,7 +12,7 @@ from norfair import Tracker, Video, draw_points, draw_tracked_objects, Detection
 from norfair.filter import OptimizedKalmanFilterFactory
 from models import DetectBackend, BodyFeatureExtractBackend
 import time
-from sender import send_frame, send_feature
+#from sender import send_frame, send_feature
 import pika
 
 
@@ -38,7 +38,7 @@ frame_time, ft_time = 0, 0
 LOGGER.info('Creating Tracker...')
 tracker = Tracker(
         initialization_delay=config.initialization_delay,
-        distance_function="euclidean",
+        distance_function="custom",
         hit_counter_max=config.hit_counter_max,
         filter_factory=OptimizedKalmanFilterFactory(),
         distance_threshold=config.distance_threshold,
@@ -90,13 +90,11 @@ while cap.isOpened():
                     for *xyxy, conf, cls in det:
                         xmin, ymin, xmax, ymax = xyxy
                         xmin, ymin, xmax, ymax = round(xmin.item()), round(ymin.item()), round(xmax.item()), round(ymax.item())
-                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.8:
+                        if (ymax-ymin)/(xmax-xmin) > 10 or (ymax-ymin)/(xmax-xmin) < 0.9:
                             det_pred = Detection(
                                     points=np.vstack(
                                         (
                                             [xmin, ymin],
-                                            [xmax, ymin],
-                                            [xmin, ymax],
                                             [xmax, ymax],
                                             )
                                         ),
@@ -109,14 +107,12 @@ while cap.isOpened():
                                     points=np.vstack(
                                         (
                                             [xmin, ymin],
-                                            [xmax, ymin],
-                                            [xmin, ymax],
                                             [xmax, ymax],
                                             )
                                         ),
                                     data=[xmin/ori_im.shape[1], ymin/ori_im.shape[0], xmax/ori_im.shape[1], ymax/ori_im.shape[0]],
                                     label=names[int(cls)],
-                                    embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]).astype(np.float32)[0],
+                                    embedding=body_model.extract(ori_im[ymin:ymax, xmin:xmax]),
                                     )
                         dect_ls.append(det_pred)
                     tracked_objects = tracker.update(detections=dect_ls, period=config.skip_period)
@@ -151,14 +147,6 @@ while cap.isOpened():
                 10:-10, 10:-10
             ] = ori_im
             video.write(frame_with_border)
-        frame_time = frame_time + time.time() - start_time
-        ft_time = ft_time + time.time() - start_time
-        if frame_time > config.frame_interval:
-            send_frame(ori_im)
-            frame_time = 0
-        if ft_time > config.feature_interval:
-            send_feature(tracked_objects)
-            ft_time = 0
         LOGGER.info(f"Total time: {(time.time()-start_time) * 1E3}ms")
         # Print time (inference-only)
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[0].dt * 1E3:.1f}ms, {dt[1].dt * 1E3:.1f}ms, {dt[2].dt * 1E3:.1f}ms, {dt[3].dt * 1E3:.1f}ms, {1/(dt[0].dt+dt[1].dt+dt[2].dt+dt[3].dt):.1f}fps")

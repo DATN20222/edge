@@ -7,6 +7,8 @@ from collections import OrderedDict, namedtuple
 from utils.torch_utils import smart_inference_mode
 import tensorrt as trt  # https://developer.nvidia.com/nvidia-tensorrt-download
 check_version(trt.__version__, '7.0.0', hard=True)  # require tensorrt>=7.0.0
+import pycuda.driver as cuda
+import pycuda.autoinit
 
 
 class DetectBackend(nn.Module):
@@ -85,32 +87,6 @@ class DetectBackend(nn.Module):
             self.forward(im)  # warmup
 
 
-# import tensorflow as tf
-# from tensorflow.python.saved_model import tag_constants
-# class BodyFeatureExtractBackend():
-#     def __init__(self, weights='saved_model'):
-#         LOGGER.info('Loading extracting model...')
-#         self.model = tf.saved_model.load(weights, tags=[tag_constants.SERVING])
-#         self.img_size = (64, 128)
-
-#     def warmup(self):
-#         LOGGER.info('Warming up extracting model...')
-#         for i in range(20):
-#             im_tmp = np.random.randint(0, 255, (np.random.randint(20, 400), np.random.randint(20, 400), 3), "uint8")
-#             self.extract(im_tmp)
-
-#     def preprocess(self, im):
-#         im = cv2.resize(im, self.img_size)
-#         im = im[np.newaxis, ...]
-#         im = tf.cast(im, tf.float32)
-#         return im
-    
-#     def extract(self, im):
-#         return self.model.signatures['serving_default'](self.preprocess(im))['output_1'][0]
-
-
-import pycuda.driver as cuda
-import pycuda.autoinit
 class BodyFeatureExtractBackend():
     def __init__(self, weights='reid_fp32.trt'):
         LOGGER.info('Loading extracting model...')
@@ -131,6 +107,7 @@ class BodyFeatureExtractBackend():
         LOGGER.info('Warming up extracting model...')
         for i in range(10):
             im_tmp = np.random.randint(0, 255, (np.random.randint(20, 400), np.random.randint(20, 400), 3), "uint8")
+            self.extract(im_tmp)
             
 
     def preprocess(self, img):
@@ -149,4 +126,5 @@ class BodyFeatureExtractBackend():
         self.context.execute_async_v2(self.bindings, self.stream.handle, None)
         cuda.memcpy_dtoh_async(self.output, self.d_output, self.stream)
         self.stream.synchronize()
-        return self.output
+        pred = self.output
+        return pred.astype(np.float32)[0]
